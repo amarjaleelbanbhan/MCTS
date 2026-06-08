@@ -53,16 +53,25 @@ MCP servers expose databases, APIs, file systems, cloud resources, and SaaS tool
 | Module | Status | Description |
 |--------|--------|-------------|
 | Repository scanning | Alpha | `mcts scan ./repo/` — Python + TypeScript discovery |
+| Multi-surface scanning | Alpha | Tools, prompts, resources, instructions (`--surfaces`) |
+| Remote HTTP/SSE probing | Alpha | `--url` with Bearer/OAuth; streamable HTTP + SSE |
+| Static JSON snapshot | Alpha | `--snapshot` for air-gapped CI from `tools/list` JSON |
 | Permission & metadata analyzers | Alpha | Destructive tools, poisoning, schema surface (FSP) |
-| Source-aware SAST | Alpha | Secrets, command execution, path validation in handlers |
+| Source-aware SAST | Alpha | Secrets, command execution, path validation, behavioral static |
+| Supply chain CVE scan | Alpha | `--pip-audit`, `--npm-audit` |
 | Runtime telemetry analyzers | Alpha | OAuth, rug-pull, injection — via `--runtime-events` / `--live` |
 | Multi-step attack chains | Alpha | Capability-graph chain detection |
 | Live stdio probing | Alpha | `--live` merges MCP protocol schemas with static analysis |
 | Config inventory | Alpha | `mcts inventory` — Cursor, Claude, VS Code, Windsurf |
 | Protocol fuzzing | Alpha | `mcts fuzz` — safe read-only probes by default |
+| Readiness scanning | Alpha | `mcts readiness` — HEUR-001–020 + OPA + LLM judge (opt-in) |
+| Surface subcommands | Alpha | `mcts scan-prompts`, `scan-resources`, `scan-instructions` |
+| REST API | Alpha | `mcts serve` — 10 endpoints (`--extra api`) |
+| Raw envelope output | Alpha | `--format raw` for CI pipelines |
+| Optional analyzers | Alpha | YARA, LLM judge, cloud inspect, VirusTotal (opt-in) |
 | Risk scoring engine | Alpha | Exponential score + risk index + category breakdown |
-| MCTS-T taxonomy | Alpha | Technique/mitigation IDs on every finding |
-| Terminal UI | Alpha | Rich dashboard, themes (`cyber`, `minimal`, `github`) |
+| MCTS-T taxonomy | Alpha | Technique/mitigation IDs + AITech crosswalk on findings |
+| Terminal UI | Alpha | Rich dashboard + `--terminal-format` table views |
 | SARIF + CI gates | Alpha | `--format sarif`, `--min-score`, `--fail-on-category` |
 | GitHub Action | Alpha | JSON + SARIF + HTML artifacts (`@v1`) |
 | HTML security dashboard | Alpha | `mcts report` — gauge, grades, OWASP, attack chains |
@@ -98,7 +107,7 @@ uv run mcts report report.json -o security-report.html
 open security-report.html
 ```
 
-The HTML report includes a dark-themed overview (score gauge, letter grade, severity cards, posture summary), risk breakdown with radar chart, searchable findings, attack chain graph, OWASP mapping, and in-browser export (JSON / HTML / PDF). See [docs/html-report.md](docs/html-report.md).
+The HTML report includes a dark-themed overview (score gauge, letter grade, severity cards, posture summary), risk breakdown with radar chart, searchable findings, attack chain graph, OWASP mapping, and in-browser export (JSON / HTML / PDF). See [docs/reporting/html-report.md](docs/reporting/html-report.md).
 
 ### CI gate (fail on critical or score)
 
@@ -107,7 +116,7 @@ uv run mcts scan ./server.py --fail-on-critical --min-score 70
 uv run mcts scan ./server.py -o report.sarif --format sarif
 ```
 
-See [docs/ci-integration.md](docs/ci-integration.md) and [action/README.md](action/README.md).
+See [docs/platform/ci-integration.md](docs/platform/ci-integration.md) and [action/README.md](action/README.md).
 
 ### Themes
 
@@ -122,10 +131,10 @@ uv run mcts scan ./server.py --theme minimal --no-progress
   MCP server (file / repo / config)
               │
               ▼
-     Discovery (static Py+TS, optional live stdio)
+     Discovery (static Py+TS, live stdio/HTTP, JSON snapshot)
               │
               ▼
-     19 security analyzers + compliance + MCTS-T taxonomy
+     25+ security analyzers + compliance + MCTS-T taxonomy
               │
               ▼
         Risk scoring engine
@@ -138,14 +147,23 @@ uv run mcts scan ./server.py --theme minimal --no-progress
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md)
-- [CLI Reference](docs/cli.md)
-- [Architecture](docs/architecture.md)
-- [Live Scanning](docs/live-scanning.md) · [Fuzzing](docs/fuzzing.md) · [Inventory](docs/inventory.md)
-- [Scoring Spec](docs/scoring-spec.md) · [CI Integration](docs/ci-integration.md)
-- [Threat Taxonomy](docs/taxonomy.md) · [TypeScript Discovery](docs/typescript-discovery.md)
-- [HTML Security Dashboard](docs/html-report.md)
-- [Feature Expansion Plan](docs/feature-expansion-plan.md) · [Roadmap](docs/roadmap.md)
+Full index: [docs/index.md](docs/index.md)
+
+**Get started**
+- [Install and first scan](docs/get-started/getting-started.md)
+
+**Scanning**
+- [Live Scanning](docs/scanning/live-scanning.md) · [Remote Scanning](docs/scanning/remote-scanning.md) · [Static Snapshot](docs/scanning/static-snapshot.md) · [Fuzzing](docs/scanning/fuzzing.md) · [Inventory](docs/scanning/inventory.md) · [Readiness](docs/scanning/readiness.md)
+
+**Analysis & reporting**
+- [Architecture](docs/analysis/architecture.md)
+- [Scoring Spec](docs/reporting/scoring-spec.md) · [Threat Taxonomy](docs/reporting/taxonomy.md) · [HTML Dashboard](docs/reporting/html-report.md)
+
+**Platform**
+- [CLI Reference](docs/platform/cli.md) · [REST API](docs/platform/rest-api.md) · [CI Integration](docs/platform/ci-integration.md)
+
+**Planning**
+- [Feature Expansion Plan](docs/more/feature-expansion-plan.md) · [Roadmap](docs/more/roadmap.md)
 - [Changelog](CHANGELOG.md)
 
 ## Project Structure
@@ -153,11 +171,13 @@ uv run mcts scan ./server.py --theme minimal --no-progress
 ```
 MCTS/
 ├── src/mcts/          # Main package (src layout)
-│   ├── cli/             # Typer CLI (`scan`, `report`, `inventory`, `fuzz`)
+│   ├── cli/             # Typer CLI (`scan`, `report`, `inventory`, `fuzz`, `readiness`, `serve`)
 │   ├── core/            # Scanner orchestration, ScanConfig
-│   ├── discovery/       # Static (Python/TS), live stdio, merge
-│   ├── probe/           # Live session, consent, behavioral events
-│   ├── analyzers/       # 19+ security analyzers
+│   ├── discovery/       # Static (Python/TS), live, JSON snapshot, merge
+│   ├── probe/           # Stdio + HTTP sessions, auth, protocol checks
+│   ├── analyzers/       # 25+ security analyzers
+│   ├── readiness/       # Production readiness heuristics
+│   ├── api/             # FastAPI REST server
 │   ├── inventory/       # Client config discovery
 │   ├── fuzz/            # Protocol fuzz runner
 │   ├── taxonomy/        # MCTS-T techniques, Sigma rules
@@ -171,6 +191,12 @@ MCTS/
 ├── examples/            # Sample MCP servers & benchmarks
 ├── action/              # GitHub Action (`@v1`)
 └── docs/                # Documentation
+    ├── get-started/     # Install and first scan
+    ├── scanning/        # Live, fuzz, TS discovery, inventory
+    ├── analysis/        # Pipeline architecture
+    ├── reporting/       # Scoring, taxonomy, HTML dashboard
+    ├── platform/        # CLI and CI
+    └── more/            # Roadmap and planning
 ```
 
 ## Development
@@ -197,10 +223,10 @@ pre-commit install
 
 | Doc | Contents |
 |-----|----------|
-| [Feature Expansion Plan](docs/feature-expansion-plan.md) | Full gap analysis, how to implement each capability, module layout, build order |
-| [Product Roadmap](docs/roadmap.md) | Phased deliverables: foundation → CI adoption → differentiation → platform |
+| [Feature Expansion Plan](docs/more/feature-expansion-plan.md) | Full gap analysis, how to implement each capability, module layout, build order |
+| [Product Roadmap](docs/more/roadmap.md) | Phased deliverables: foundation → CI adoption → differentiation → platform |
 
-**Next up:** SSE/HTTP transports, `mcts audit-config`, scan history/trends, `mcts pentest` agent. Phase 0–1 foundation (repo scan, SARIF, live probe, inventory, taxonomy) is shipped — see [Roadmap](docs/roadmap.md).
+**Next up:** `mcts audit-config`, scan history/trends, `mcts pentest` agent, multi-language behavioral SAST. Phase 0–2 foundation (repo scan, SARIF, live + remote probe, multi-surface, inventory, taxonomy) is shipped — see [Roadmap](docs/more/roadmap.md).
 
 ## Contributing
 
