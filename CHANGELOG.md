@@ -52,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Brand assets in `src/mcts/brand/` (canonical logo + HTML-optimized embed)
 - Docs: [HTML Security Dashboard](docs/reporting/html-report.md), [CLI](docs/platform/cli.md), [Getting Started](docs/get-started/getting-started.md), [Architecture](docs/analysis/architecture.md), and README
 
+### FIxed
+
+- `CrossServerAnalyzer` no longer counted in "analyzers run" when inventory is empty (was a silent no-op during `mcts scan`)
+
 ### Changed
 
 - **Documentation** — synced planning and operational docs with the gap backlog (213 GAP rows + 74 ecosystem layer gaps): Part 11 appendix in [Feature Expansion Plan](docs/more/feature-expansion-plan.md), roadmap gaps in [Product Positioning](docs/more/product-positioning.md), planned CLI/CI/reporting/discovery sections in [platform](docs/platform/), [scanning](docs/scanning/), [analysis/security-checks](docs/analysis/security-checks.md), [getting-started](docs/get-started/getting-started.md), [action](action/README.md)
