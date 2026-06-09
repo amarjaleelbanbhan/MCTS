@@ -7,9 +7,11 @@
 ![Status](https://img.shields.io/badge/status-alpha-orange)
 ![Security](https://img.shields.io/badge/focus-MCP%20Security-red)
 
-Security analysis purpose-built for Model Context Protocol (MCP) servers — permissions, injection, attack chains, and risk scoring.
+Security scanner for [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers — the programs that give AI assistants access to tools, files, databases, and APIs.
 
-Make MCP threat scanning as easy as running a linter.
+Run one command to find permission issues, injection risks, attack chains, and more. Works locally, in CI, with no cloud account required.
+
+> **New to MCP or MCTS?** See the [documentation index](docs/index.md) and [glossary](docs/glossary.md).
 
 ```bash
 mcts scan ./server.py
@@ -45,7 +47,14 @@ Severity Summary          Top Findings
 
 ## Problem
 
-MCP servers expose databases, APIs, file systems, cloud resources, and SaaS tools to AI agents — often without rigorous security review. MCTS helps teams find issues before attackers do.
+AI assistants connect to the outside world through **MCP servers** — small programs that expose callable tools (e.g. "delete user", "read file", "query database"). A misconfigured or malicious server can:
+
+- Grant the AI destructive capabilities it shouldn't have
+- Hide malicious instructions in tool descriptions
+- Chain innocent tools into data theft or remote code execution
+- Leak secrets embedded in server source code
+
+Most teams ship MCP servers without dedicated security review. MCTS makes scanning as routine as running a linter.
 
 ## Features
 
@@ -147,10 +156,10 @@ uv run mcts scan ./server.py --theme minimal --no-progress
 
 ## Documentation
 
-Full index: [docs/index.md](docs/index.md)
+Full index: [docs/index.md](docs/index.md) · [Glossary](docs/glossary.md)
 
 **Get started**
-- [Install and first scan](docs/get-started/getting-started.md)
+- [Install and first scan](docs/get-started/getting-started.md) — step-by-step guide (~15 min)
 
 **Scanning**
 - [Live Scanning](docs/scanning/live-scanning.md) · [Remote Scanning](docs/scanning/remote-scanning.md) · [Static Snapshot](docs/scanning/static-snapshot.md) · [Fuzzing](docs/scanning/fuzzing.md) · [Inventory](docs/scanning/inventory.md) · [Readiness](docs/scanning/readiness.md)
@@ -163,7 +172,7 @@ Full index: [docs/index.md](docs/index.md)
 - [CLI Reference](docs/platform/cli.md) · [REST API](docs/platform/rest-api.md) · [CI Integration](docs/platform/ci-integration.md)
 
 **Planning**
-- [Feature Expansion Plan](docs/more/feature-expansion-plan.md) · [Roadmap](docs/more/roadmap.md)
+- [Feature Expansion Plan](docs/more/feature-expansion-plan.md) · [Roadmap](docs/more/roadmap.md) · [Product Positioning](docs/more/product-positioning.md)
 - [Changelog](CHANGELOG.md)
 
 ## Project Structure
@@ -211,13 +220,22 @@ pre-commit install
 
 ## Positioning
 
-| Tool | Domain |
-|------|--------|
-| SonarQube | Code quality |
-| OWASP ZAP | Web security |
-| Trivy | Container security |
-| Semgrep | Static analysis |
-| **MCTS** | **MCP security** |
+MCTS is **MCP-boundary security** — tool metadata, schemas, handler source, client configs, protocol behavior, and capability-graph attack chains. It complements general AppSec tools; it does not replace Semgrep, Trivy, or enterprise runtime gateways.
+
+| Tool category | Domain | MCTS overlap |
+|---------------|--------|--------------|
+| General SAST | Application code vulnerabilities | MCP tool poisoning, schema FSP, cross-server shadowing |
+| HTTP DAST | Web application surface | MCP protocol + live tool manifest probes |
+| Container / dependency scanners | Images and packages | `--pip-audit` / `--npm-audit` at the MCP repo layer |
+| Agent fleet scanners | Agent + MCP inventory | Attack chains, MCTS-T taxonomy, readiness/OPA |
+| Trust registries | Cloud scan + reputation | MCTS is local-first; no account required for CI |
+| Runtime gateways | Runtime policy & governance | Different layer — MCTS scans before deploy; they enforce at runtime |
+
+**Where MCTS leads today:** auditable exponential scoring, capability-graph attack chains, first-party MCTS-T taxonomy with bundled Sigma rules, executive HTML dashboard, readiness + OPA, YARA on metadata, line-jumping detection, local-first default.
+
+**Highest-priority gaps:** Semgrep SAST adapter (+ Java), skills / `SKILL.md` scanning, machine-wide config scan, MCP server mode (`mcts-mcp`), AI-BOM / CycloneDX export, interactive attack-graph UI, runtime stdio proxy, governance YAML policies.
+
+See [Product Positioning](docs/more/product-positioning.md) and [Feature Expansion Plan — Part 11](docs/more/feature-expansion-plan.md#part-11--prioritized-backlog).
 
 ## Roadmap
 
@@ -226,7 +244,7 @@ pre-commit install
 | [Feature Expansion Plan](docs/more/feature-expansion-plan.md) | Full gap analysis, how to implement each capability, module layout, build order |
 | [Product Roadmap](docs/more/roadmap.md) | Phased deliverables: foundation → CI adoption → differentiation → platform |
 
-**Next up:** `mcts audit-config`, scan history/trends, `mcts pentest` agent, multi-language behavioral SAST. Phase 0–2 foundation (repo scan, SARIF, live + remote probe, multi-surface, inventory, taxonomy) is shipped — see [Roadmap](docs/more/roadmap.md).
+**Next up (Phase 2–3):** Semgrep SAST layer, skills scanning, `mcts-mcp` server mode, AI-BOM export, attack-graph dashboard UI, runtime stdio proxy, `mcts audit-config`, scan history/trends, `mcts pentest`, remote fuzz (`mcts fuzz --url`). Phase 0–1 foundation is shipped — see [Roadmap](docs/more/roadmap.md).
 
 ## Contributing
 

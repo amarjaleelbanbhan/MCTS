@@ -2,13 +2,21 @@
 
 > [Documentation](../index.md) → [Scanning](README.md)
 
-`mcts inventory` discovers MCP servers configured on the **local machine** by reading known client configuration files. It answers: *which MCP servers are installed, how are they launched, and do tool names collide across servers?*
+**Inventory** discovers which MCP servers are configured on your local machine by reading client config files (Cursor, Claude Desktop, VS Code, Windsurf). It answers: *what servers are installed, how are they launched, and do any tool names collide?*
 
-Optional `--scan` runs a lightweight static discovery pass on each entrypoint to list tool names. Cross-server analysis flags **tool shadowing** when identical tool names appear on different servers — a common agent confusion vector mapped to **MCTS-T-1008**.
+> **Want to scan a specific server?** Use `mcts scan` instead. Inventory is for auditing your local setup.
 
-**Implementation:** `inventory/discoverers.py`, `inventory/runner.py`, `analyzers/cross_server.py`
+---
 
-Configs with `//` comments or JSON5-style syntax (common in VS Code `settings.json`) are parsed via `discovery/json5_util.py`.
+## In plain English
+
+If you use Cursor, Claude Desktop, or VS Code with MCP servers, those apps store config files listing which servers are installed and how to launch them. MCTS reads these configs and shows you:
+
+- Which MCP servers are configured
+- How each server is launched (command, args, environment)
+- Whether any tool names appear on multiple servers (called **tool shadowing** — a common agent confusion risk)
+
+With `--scan`, MCTS also runs a lightweight security scan on each server's entrypoint.
 
 ---
 
@@ -190,9 +198,32 @@ See [Live Scanning](live-scanning.md).
 |------------|--------|
 | Local configs only | No remote fleet or enterprise MDM discovery |
 | Heuristic entrypoint resolution | `--scan` may miss non-Python launch patterns |
-| Four clients today | Broader agent support on roadmap |
+| Four clients today | Broader agent support on [roadmap](../more/roadmap.md) — see [Planned discovery](#planned-discovery) |
 | No secret values in export | Only `env_keys` names — not values |
 | Ephemeral CI runners | GitHub-hosted runners typically have no user MCP configs |
+
+---
+
+## Planned discovery
+
+Competitor audit gaps targeting inventory and config discovery (GAP-095–105, GAP-218–231):
+
+| Capability | Status | Phase | GAP |
+|------------|--------|-------|-----|
+| 12+ agent clients (Gemini, Codex, OpenClaw, Amazon Q…) | Partial | 3 | GAP-095 |
+| VS Code `workspaceStorage` / profiles | Missing | 3 | GAP-096 |
+| Claude Code plugin + project-level globs | Missing | 3 | GAP-097 |
+| Skills dirs (`.cursor/skills`, etc.) | Missing | 3 | GAP-099 |
+| `mcts inventory --skills` | Missing | 2 | GAP-029 |
+| Machine-wide scan without explicit target | Missing | 2 | GAP-006 |
+| `--scan-all-users` multi-home | Missing | 3 | GAP-021 |
+| macOS codesign trust on stdio binaries | Missing | 3 | GAP-101 |
+| WSL profile merge | Missing | 3 | GAP-102 |
+| Shadow MCP discovery + allowlist | Missing | 2 | GAP-231 |
+| CycloneDX AI-BOM export | Missing | 2–3 | GAP-106 |
+| Fleet asset prefix / enterprise merge | Missing | 4 | GAP-116 |
+
+Full list: [Feature Expansion Plan — Discovery](../more/feature-expansion-plan.md#discovery-13).
 
 ---
 

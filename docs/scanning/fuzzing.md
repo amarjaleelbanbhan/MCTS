@@ -2,11 +2,23 @@
 
 > [Documentation](../index.md) → [Scanning](README.md)
 
-MCTS protocol fuzzing sends **deterministic JSON-RPC probes** to a live stdio MCP server. It tests parser robustness, error handling, and information disclosure — without destructive payloads at default settings.
+**Fuzzing** sends test messages to a live MCP server to check how it handles malformed or unexpected input. It tests protocol robustness — not business logic.
 
-Fuzz output includes structured **findings** and **runtime_events** that can be replayed into a full `mcts scan` for `RuntimeEventsAnalyzer` and taxonomy enrichment.
+> **Safe by default.** The default `safe` level never calls your tools. See [Fuzz levels](#fuzz-levels) below.
+> **Requires consent** — fuzzing starts a real server subprocess.
 
-**Implementation:** `fuzz/runner.py`, `fuzz/payloads.py`, `fuzz/classifier.py`
+---
+
+## In plain English
+
+Fuzzing is like knocking on a server's door with weird requests to see if it crashes, leaks information, or handles errors gracefully. MCTS sends deterministic test probes (not random mutations) and records what happens.
+
+Three levels:
+- **safe** (default) — read-only protocol checks, never invokes tools
+- **standard** — adds resource/prompt edge cases, still read-only
+- **aggressive** — may call tools with test payloads (requires extra consent)
+
+Fuzz output can be fed into a full scan via `--runtime-events` for deeper analysis.
 
 ---
 
@@ -183,6 +195,19 @@ Use **safe** level on trusted fixture servers only:
 ```
 
 Never run **aggressive** fuzz against production or third-party servers.
+
+---
+
+## Planned fuzz capabilities
+
+| Capability | Status | GAP | Notes |
+|------------|--------|-----|-------|
+| Remote protocol fuzz (`mcts fuzz --url`) | Planned | GAP-190 | HTTP/SSE targets |
+| WebSocket MCP transport fuzz | Missing | GAP-187 | WebSocket transport coverage |
+| Docker MCP server auto-detection | Missing | GAP-188 | Container-launched servers |
+| Deeper aggressive corpus | Partial | GAP-186 | Expanded dynamic analyzer corpus |
+
+See [Feature Expansion Plan — Fuzzing](../more/feature-expansion-plan.md#fuzzing-4).
 
 ---
 

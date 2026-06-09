@@ -2,14 +2,24 @@
 
 > [Documentation](../index.md) → [More](README.md)
 
+This document describes **where MCTS is today** (alpha), **what's shipped**, and **what's planned** in upcoming phases. Read this to understand project direction and prioritize contributions.
 
-MCTS aims to become the **default security platform for the MCP ecosystem** — the CVSS-style scorecard, CI gate, and threat intelligence layer for AI agent tooling.
+> **Just want to use MCTS?** See [Getting Started](../get-started/getting-started.md).
+> **Detailed implementation guide:** [Feature Expansion Plan](feature-expansion-plan.md)
 
-**Detailed implementation guide:** [Feature Expansion Plan](feature-expansion-plan.md) — gap analysis, module layout, build order, and success criteria.
+---
+
+## Vision
+
+MCTS aims to become the **default security tool for MCP servers** — the same way teams use `ruff check` for Python linting or Trivy for container scanning.
+
+**North star:** Every MCP server repository runs `mcts scan` in CI before merge.
+
+Today, MCTS identifies security issues across permissions, injection, tool abuse, data leakage, and attack chains. The next evolution adds deeper SAST, skills scanning, AI-BOM export, and runtime proxy capabilities.
 
 **Operational docs (shipped features):** [Architecture](../analysis/architecture.md) · [CLI](../platform/cli.md) · [Scoring](../reporting/scoring-spec.md) · [CI](../platform/ci-integration.md)
 
-Status labels:
+Status labels used throughout this document:
 
 | Label | Meaning |
 |-------|---------|
@@ -17,14 +27,6 @@ Status labels:
 | In progress | Actively being built |
 | Planned | Scoped for an upcoming phase |
 | Future | Longer-term vision |
-
----
-
-## Vision
-
-Today, MCTS identifies security issues across permissions, prompt injection, tool abuse, data leakage, and attack chains. The next evolution turns those findings into **actionable risk intelligence** that teams can compare, track over time, and enforce in CI/CD — the same way teams use Trivy for containers or Semgrep for code.
-
-**North star:** Make `mcts scan` as standard in MCP projects as `ruff check` is in Python projects.
 
 ---
 
@@ -63,6 +65,9 @@ See [Feature Expansion Plan — Part 1](feature-expansion-plan.md#part-1--curren
 - `mcts pentest` remains a stub
 - Remote protocol fuzz (`mcts fuzz --url`) not yet supported — stdio only
 - ~34 / ~75 external-framework techniques covered by regression fixtures (~45%)
+- Semgrep/Java SAST, skills scanning, and MCP server mode remain on the Phase 2–3 backlog (see [Part 11](feature-expansion-plan.md#part-11--prioritized-backlog))
+- No CycloneDX AI-BOM export, runtime stdio proxy, or interactive attack-graph UI yet
+- Trust registries and runtime gateways address adjacent layers MCTS does not replace
 
 ---
 
@@ -198,6 +203,13 @@ Per-tool capability dimensions (reads untrusted input, egresses network, execute
 | 2.8 | Visual attack graph export | Planned | Mermaid, Graphviz, PNG |
 | 2.9 | MCP marketplace scorecards | Planned | Public benchmark publishing |
 | 2.10 | Remote protocol fuzz | Planned | `mcts fuzz --url` |
+| 2.11 | Semgrep SAST adapter (+ Java) | Planned | `--semgrep` optional extra |
+| 2.12 | Skills / `SKILL.md` scanning | Planned | `mcts inventory --skills` |
+| 2.13 | Machine-wide config scan | Planned | Scan all well-known clients without explicit target |
+| 2.14 | Interactive attack-graph dashboard | Planned | HTML UI from `attack_chains` data |
+| 2.15 | Git-aware MCP config diff + PR comments | Planned | CI markdown output |
+| 2.16 | Governance YAML policies | Planned | Extend readiness/OPA |
+| 2.17 | CycloneDX / AI-BOM export | Planned | From inventory + scan metadata |
 
 ---
 
@@ -208,13 +220,18 @@ Per-tool capability dimensions (reads untrusted input, egresses network, execute
 
 | # | Deliverable |
 |---|-------------|
-| 3.1 | Package vetting (`mcts vet pypi:…`) |
+| 3.1 | Package vetting (`mcts vet pypi:…` / `npm:…`) |
 | 3.2 | MCP server mode for IDE agents (`mcts-mcp`) |
-| 3.3 | Opt-in LLM review (`--llm-review`) |
+| 3.3 | Opt-in LLM review (`--llm-review`, review agent) |
 | 3.4 | Security baselines (`--profile strict\|balanced\|dev`) |
 | 3.5 | Certification badges (`mcts badge`) |
 | 3.6 | Expanded benchmark suite (Juice Shop–style MCP corpus) |
 | 3.7 | Community hub — research, hall of fame, disclosures |
+| 3.8 | Runtime stdio proxy (optional extra) — inline tool-call detectors |
+| 3.9 | Continuous config watch daemon |
+| 3.10 | Container / IaC scan (MCP-relevant subset) |
+| 3.11 | Sigstore attestation + VEX triage |
+| 3.12 | Optional trust-registry feed (read-only grades; no cloud scan required) |
 
 ---
 
@@ -223,10 +240,12 @@ Per-tool capability dimensions (reads untrusted input, egresses network, execute
 Stay focused on MCP server-author security. Deferred or out of scope:
 
 - Cloud-dependent analysis APIs (local-first default)
-- Agent Guard / runtime monitoring hooks
+- Agent Guard / runtime monitoring hooks (integrate with gateways via SARIF/events)
 - General-purpose 1,700-rule SAST
 - Gamification or closed-source scanner cores
 - Vendoring third-party threat framework corpora (link + map IDs only)
+- Public trust registry as required OSS product (optional read-only feed only)
+- Runtime MCP gateway / enterprise ACL plane (different product layer — integrate via SARIF/events)
 
 Full rationale: [Feature Expansion Plan — Part 8](feature-expansion-plan.md#part-8--what-not-to-build).
 
@@ -237,8 +256,8 @@ Full rationale: [Feature Expansion Plan — Part 8](feature-expansion-plan.md#pa
 | Phase | Focus | Key deliverables |
 |-------|-------|------------------|
 | **Phase 0–1** Yes | Foundation + adoption | Repo scan · SARIF · Action · live probe · inventory · taxonomy · fuzz |
-| **Phase 2** | Differentiation | audit-config · trends · simulation · remote fuzz |
-| **Phase 3** | Platform | Vet · MCP tools · certification |
+| **Phase 2** | Differentiation + parity | Semgrep · skills · AI-BOM · attack-graph UI · audit-config · trends · remote fuzz |
+| **Phase 3** | Platform | Vet · MCP tools · proxy · certification · optional registry feed |
 
 ### Suggested build order
 

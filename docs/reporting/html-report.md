@@ -2,7 +2,24 @@
 
 > [Documentation](../index.md) → [Reporting](README.md)
 
-MCTS generates a **self-contained HTML security dashboard** from any JSON scan report. The UI targets security engineers and executives — dense metrics, searchable findings, attack chain visualization, and export options in a single file.
+The HTML dashboard turns a JSON scan report into a **shareable, self-contained web page** — suitable for security reviews, leadership briefings, or audit documentation.
+
+> **Haven't generated a report yet?** Run `mcts scan ./server.py -o report.json` first, then `mcts report report.json -o report.html`.
+
+---
+
+## In plain English
+
+After scanning, you get a JSON file with all findings and scores. The HTML dashboard converts that JSON into a polished web page with:
+
+- A visual score gauge and letter grade (A–F)
+- Severity breakdown cards and category radar chart
+- A searchable, filterable findings table with remediation advice
+- Attack chain visualization
+- OWASP LLM Top 10 compliance mapping
+- One-click export to PDF
+
+The output is a single HTML file — no server needed to view it. Open it in any browser and share it via email or Slack.
 
 ---
 
@@ -185,14 +202,16 @@ Scan data itself never leaves the file. See [SECURITY.md](../../SECURITY.md).
 
 ## Planned enhancements
 
-| Feature | Phase | Data source |
-|---------|-------|-------------|
+| Feature | Phase | GAP |
+|---------|-------|-----|
+| Interactive attack-graph UI (force-directed) | 2 | GAP-218 |
 | Capability Matrix | 1 | `capability/inferrer.py` profiles |
 | Technique Map (full MCTS-T grid) | 1 | All `technique_id` on findings |
-| Live trend chart | 2 | `.mcts/history/<hash>.jsonl` |
+| Live trend chart | 2 | GAP-126 — `.mcts/history/` |
 | Diff view vs baseline | 2 | `--baseline` snapshots |
+| Credential / blast-radius graph pages | 3 | L7-07 |
 
-See [Feature Expansion Plan](../more/feature-expansion-plan.md) and [Roadmap](../more/roadmap.md).
+See [Feature Expansion Plan — Reporting](../more/feature-expansion-plan.md#reporting-10) and [Roadmap](../more/roadmap.md).
 
 ---
 

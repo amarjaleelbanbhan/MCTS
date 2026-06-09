@@ -2,9 +2,25 @@
 
 > [Documentation](../index.md) → [Analysis](README.md)
 
-MCTS follows a modular **discover → analyze → score → report** pipeline. The scanner orchestrates static and optional live discovery, runs a registry of security analyzers, applies compliance checks and taxonomy enrichment, and emits JSON/SARIF/terminal/HTML output.
+This document explains how MCTS works internally — from reading your source code to producing a scored security report. Read this if you want to understand the pipeline, extend MCTS with new analyzers, or debug unexpected scan results.
 
-This document describes every major layer, data model, analyzer registry, and extension point. **Planning docs:** [Feature Expansion Plan](../more/feature-expansion-plan.md) · [Roadmap](../more/roadmap.md)
+> **Just want to use MCTS?** You don't need this doc. Start with [Getting Started](../get-started/getting-started.md).
+> **Unfamiliar with terms?** See the [Glossary](../glossary.md).
+
+---
+
+## In plain English
+
+When you run `mcts scan ./server.py`, MCTS does four things:
+
+1. **Discover** — Find all MCP tools, prompts, resources, and handler source code (from files, a running server, or exported JSON)
+2. **Analyze** — Run 20+ automated security checks on what was discovered
+3. **Score** — Convert findings into a 0–100 security score using a transparent formula
+4. **Report** — Show results in your terminal, or export as JSON, SARIF, or HTML
+
+Each step is a separate module in the codebase, connected by shared data models. The sections below describe each layer in detail.
+
+**Planning docs:** [Feature Expansion Plan](../more/feature-expansion-plan.md) · [Roadmap](../more/roadmap.md)
 
 ---
 
@@ -447,19 +463,26 @@ src/mcts/
 
 ## Planned evolution
 
-| Feature | Status |
-|---------|--------|
-| Remote protocol fuzz (`mcts fuzz --url`) | Planned |
-| `mcts audit-config`, `mcts simulate`, `mcts pentest`, `mcts vet` | Planned / stub |
-| Scan history / trends (`.mcts/history/`) | Planned |
-| HTML Capability Matrix + Technique Map | Planned |
-| Tree-sitter depth for TypeScript handlers | Partial (`--extra sast`) |
-| Go/Rust behavioral SAST | Shipped (regex; tree-sitter optional) |
-| SSE/HTTP live transports | Shipped (`--url`, `--transport`) |
-| REST API (`mcts serve`) | Shipped (10 endpoints) |
-| Expanded behavioral eval corpus | Partial (22 cases in `eval/behavioral/`) |
+| Feature | Status | Phase |
+|---------|--------|-------|
+| Semgrep SAST + Java (`--semgrep`) | Planned | 2–3 |
+| Skills / `SKILL.md` scanning | Planned | 2 |
+| MCP server mode (`mcts-mcp`) | Planned | 3 |
+| CycloneDX / AI-BOM export | Planned | 2–3 |
+| Interactive attack-graph HTML UI | Planned | 2 |
+| Runtime stdio proxy | Planned | 3 |
+| Remote protocol fuzz (`mcts fuzz --url`) | Planned | 2 |
+| `mcts audit-config`, `mcts simulate`, `mcts pentest`, `mcts vet` | Planned / stub | 2–4 |
+| Scan history / trends (`.mcts/history/`) | Planned | 2 |
+| HTML Capability Matrix + Technique Map | Planned | 2 |
+| Tree-sitter depth for TypeScript handlers | Partial (`--extra sast`) | 2 |
+| Go/Rust behavioral SAST | Shipped (regex; tree-sitter optional) | — |
+| SSE/HTTP live transports | Shipped (`--url`, `--transport`) | — |
+| REST API (`mcts serve`) | Shipped (10 endpoints) | — |
+| Expanded behavioral eval corpus | Partial (22 cases in `eval/behavioral/`) | 3 |
+| Governance YAML + continuous watch | Planned | 2–3 |
 
-See [Roadmap](../more/roadmap.md) and [Feature Expansion Plan](../more/feature-expansion-plan.md).
+See [Roadmap](../more/roadmap.md), [Feature Expansion Plan Part 11](../more/feature-expansion-plan.md#part-11--prioritized-backlog), and [Product Positioning](../more/product-positioning.md#known-gaps-roadmap-summary).
 
 ---
 

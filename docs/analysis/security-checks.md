@@ -2,7 +2,26 @@
 
 > [Documentation](../index.md) → [Analysis](README.md)
 
-Complete catalog of checks MCTS runs during **`mcts scan`**, optional probes, and the separate **`mcts readiness`** command. Each check maps to an analyzer key in scan reports, a technique ID in the [MCTS-T taxonomy](../reporting/taxonomy.md), and (where applicable) a severity that affects the [security score](../reporting/scoring-spec.md).
+This is the complete catalog of security checks MCTS runs. Use it to understand **what each check looks for**, **how severe findings are**, and **how to enable optional checks**.
+
+> **Just want to run a scan?** See [Getting Started](../get-started/getting-started.md).
+> **Want the pipeline overview?** See [Architecture](architecture.md).
+
+---
+
+## In plain English
+
+When MCTS scans your server, it runs a series of automated checks — called **analyzers** — each looking for a specific type of security problem. By default, 20 analyzers run automatically. You can enable 5+ more with flags like `--pip-audit` or `--yara`.
+
+Every finding includes:
+- A **severity** (Critical, High, Medium, or Low)
+- A **description** of what's wrong and why it matters
+- A **recommendation** for how to fix it
+- A **technique ID** (like `MCTS-T-1003`) for tracking and compliance
+
+Some checks are separate from the main scan:
+- **`mcts readiness`** — production readiness heuristics (not security)
+- **Compliance (OWASP)** — always appended but does not affect your score
 
 ---
 
@@ -723,6 +742,38 @@ uv run mcts report report.json -o security-report.html
 
 ---
 
+## 16. Planned checks
+
+Checks on the roadmap that MCTS does **not** yet run by default. Full tables: [Feature Expansion Plan — Analyzer appendix](../more/feature-expansion-plan.md#analyzer-47) · [Appendix B ecosystem layers](../more/feature-expansion-plan.md#part-11-appendix-b--ecosystem-layer-gaps-l1l10).
+
+| Area | Planned capability | Status | P |
+|------|-------------------|--------|---|
+| SAST depth | 10-language CFG + cross-file taint | Weak/Missing | P0 |
+| Semgrep / Java | Optional `--semgrep` backend | Missing | P0 |
+| Skills | 6-layer SKILL.md scanning + E004–E006 | Missing | P0 |
+| Agent guardrails | Prompt firewall + pre-exec action gate | Missing | P0 |
+| Supply chain | Hallucinated npm packages, typosquat engine | Missing | P0–P1 |
+| Scoring alt | AIVSS v2, CVSS v4 per finding | Missing | P1–P2 |
+| LLM pipeline | Prompt library, input guard, second review pass | Missing/Partial | P1 |
+| Toxic flows | W015–W020 / E002 taxonomy codes | Partial | P1 |
+| Registry | `server.json` manifest walker | Missing | P1 |
+| SBOM | CycloneDX, diff, hallucination check | Missing | P1 |
+| Auto-fix | MCP-specific fix templates (subset) | Missing | P1 |
+| Smuggling | ANSI / control-char in tool text | Partial | P2 |
+| Runtime proxy | Inline tool-call detectors on stdio | Missing | P1 |
+| Proxy RT | Prompt injection / exfil / rate-limit at runtime | Missing | P2–P3 |
+| Frameworks | MITRE ATLAS, SOC2/GDPR evidence bundles | Missing | P2–P4 |
+| Novel (L10) | Runtime trust score, reputation graph, benchmarking | Planned | Future |
+
+Enable today's closest equivalents while waiting:
+
+```bash
+mcts scan ./repo/ --pip-audit --npm-audit --semantic-secrets --yara --llm-judge
+mcts inventory --scan   # cross-server shadowing (partial toxic-flow coverage)
+```
+
+---
+
 ## Related
 
 - [Architecture](architecture.md) — pipeline and analyzer registry
@@ -730,3 +781,4 @@ uv run mcts report report.json -o security-report.html
 - [Scoring Specification](../reporting/scoring-spec.md) — how severities affect score
 - [CLI Reference](../platform/cli.md) — flags to enable optional checks
 - [Live Scanning](../scanning/live-scanning.md) · [Remote Scanning](../scanning/remote-scanning.md) · [Fuzzing](../scanning/fuzzing.md)
+- [Planned checks — §16](#16-planned-checks) · [Feature Expansion Plan](../more/feature-expansion-plan.md#part-11-appendix--full-gap-backlog-gap-001240)

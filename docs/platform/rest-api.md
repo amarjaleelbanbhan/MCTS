@@ -2,9 +2,20 @@
 
 > [Documentation](../index.md) → [Platform](README.md)
 
-MCTS exposes an optional **FastAPI** server for programmatic scans — same `Scanner` class as the CLI.
+MCTS can run as a **REST API server** for programmatic scans — useful when you want other tools or services to trigger scans without using the CLI directly.
 
-Implementation: `api/app.py` · CLI: `mcts serve`.
+> **Most users should use the CLI.** The REST API is for automation and integration scenarios.
+
+---
+
+## In plain English
+
+Instead of running `mcts scan` from the command line, you can start a local HTTP server with `mcts serve` and send scan requests via REST endpoints. The API runs the same scanner as the CLI and returns the same JSON report format.
+
+Use cases:
+- Integrate MCTS into an internal security platform
+- Trigger scans from a web dashboard or orchestration tool
+- Run scans from languages other than Python/shell
 
 ---
 
@@ -115,6 +126,18 @@ Endpoint-specific fields:
 ```
 
 Response: full `ScanReport` JSON (`model_dump()`).
+
+### Planned API extensions
+
+| Capability | Status | GAP | Notes |
+|------------|--------|-----|-------|
+| Per-request analyzer/scoring knobs (full parity with CLI) | Partial | GAP-213 | Expand `ScanRequest` |
+| OAuth object on REST auth | Partial | GAP-093 | Beyond bearer token |
+| Taxonomy tree in API response | Missing | GAP-094 | Hierarchical MCTS-T |
+| MCP server mode over stdio | Planned | GAP-115 | `scan_mcp_target`, `explain_finding` tools |
+| Fleet upload / bootstrap ingest | Planned | GAP-116–118 | Enterprise defer |
+
+See [Feature Expansion Plan — REST API](../more/feature-expansion-plan.md#rest-api-1).
 
 ### Example
 

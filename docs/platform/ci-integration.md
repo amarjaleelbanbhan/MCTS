@@ -2,7 +2,23 @@
 
 > [Documentation](../index.md) → [Platform](README.md)
 
-MCTS is designed for **local-first pipeline gates** — no cloud API required for core scans. Use JSON for artifacts, SARIF for GitHub Advanced Security, HTML for human review, and score thresholds to fail builds deterministically.
+This guide shows how to run MCTS in your CI/CD pipeline — fail builds on security thresholds, upload SARIF to GitHub Code Scanning, and share HTML reports with your team.
+
+> **Just want a quick gate?** Run `mcts scan ./server.py --fail-on-critical --min-score 70`
+> **Want the GitHub Action?** See [GitHub Actions](#github-actions-published-action) below.
+
+---
+
+## In plain English
+
+MCTS is designed to work in CI without a cloud account. The typical workflow:
+
+1. **Scan** your MCP server on every pull request
+2. **Fail the build** if critical findings exist or the score drops below your threshold
+3. **Upload SARIF** so findings appear in GitHub's Security tab
+4. **Save HTML** as a workflow artifact for human review
+
+No API keys or external services required for standard scans.
 
 ---
 
@@ -254,6 +270,24 @@ Pair MCTS gates with required CI checks on `main`. See [CONTRIBUTING.md](../../C
 | SARIF contents | May include file paths and finding snippets — treat as security data |
 | HTML artifacts | Self-contained; no exfiltration, but contains full scan |
 | Secrets in repos | MCTS may flag secrets in scanned source — rotate if leaked in CI logs |
+
+---
+
+## Planned CI capabilities
+
+From the gap backlog — planned for Phase 2–3:
+
+| Capability | GAP | Priority | Notes |
+|------------|-----|----------|-------|
+| Unified `--ci` preset bundle | GAP-024 | P1 | Single flag for gates + format |
+| Git-diff scoped scan in PR | GAP-010 | P1 | `--diff-base` / `mcts diff` |
+| PR comment markdown output | GAP-235 | P2 | PR comment format for CI |
+| `--ignore-issues-codes` allowlist | GAP-025 | P2 | Suppress W001 etc. in CI |
+| GitLab CI template | GAP-167 | P3 | Secondary to GitHub Action |
+| Inventory on scheduled self-hosted runners | GAP-006 | P0 | Machine-wide config audit |
+| Pre-commit hook installer | GAP-038 | P2 | `init-hooks` companion |
+
+See [CLI planned flags](../platform/cli.md#planned-commands-and-flags) and [Roadmap Phase 2](../more/roadmap.md#phase-2--differentiation-in-progress).
 
 ---
 

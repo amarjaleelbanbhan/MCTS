@@ -2,13 +2,23 @@
 
 > [Documentation](../index.md) → [More](README.md)
 
-What **MCTS** (Model Context Threat Scanner) is built for, who it serves, what it delivers today, and where the roadmap is headed.
+This document explains **what MCTS is built for**, **who uses it**, **what it does well today**, and **what's planned next**. Read this if you're evaluating MCTS, presenting it to stakeholders, or deciding how it fits alongside your existing security tools.
+
+> **Just want to run a scan?** See [Getting Started](../get-started/getting-started.md).
 
 ---
 
 ## What MCTS is
 
-MCTS is a **local-first MCP server security scanner** for server authors, platform security teams, and agent infrastructure engineers. It discovers tools from Python and TypeScript source (or optional live stdio/HTTP/SSE probes), runs 20 analyzers by default (25+ with optional flags), scores risk with auditable math, and outputs terminal dashboards, JSON, SARIF, and executive HTML reports — **without requiring a cloud API** for standard scans.
+MCTS is a **local-first security scanner for MCP servers**. It helps teams find vulnerabilities in the tools, prompts, and resources that AI assistants can access — before deployment.
+
+**In one sentence:** MCTS is to MCP servers what Semgrep is to application code, or Trivy is to containers.
+
+Key properties:
+- **Runs locally** — no cloud account required for standard scans
+- **Works in CI** — SARIF output, score gates, published GitHub Action
+- **MCP-specific** — checks tool permissions, description poisoning, attack chains, and protocol behavior that general SAST tools miss
+- **Transparent scoring** — auditable 0–100 score with clear pass/fail gates
 
 ```bash
 mcts scan ./repo/ -o report.json --min-score 70
@@ -16,7 +26,7 @@ mcts report report.json -o security-report.html
 mcts inventory --scan -o inventory.json
 ```
 
-MCTS sits at the **MCP boundary**: tool metadata, JSON schemas, handler source, client configs, and protocol behavior — not generic application pentesting.
+MCTS focuses on the **MCP boundary** — tool metadata, JSON schemas, handler source code, client configs, and protocol behavior. It does not replace general application pentesting or runtime policy enforcement.
 
 ---
 
@@ -107,35 +117,102 @@ Technique fixtures under `tests/fixtures/regression/` ensure analyzer changes do
 
 ---
 
-## Comparison framing (not competitive benchmarks)
+## Comparison framing
 
-MCTS is complementary to general-purpose tools:
+MCTS is complementary to general-purpose AppSec tooling:
 
 | Tool category | Focus | MCTS focus |
 |---------------|-------|------------|
-| SAST (Semgrep, CodeQL) | General code vulnerabilities | MCP tool boundary, schemas, agent abuse |
-| DAST (ZAP, Burp) | HTTP application surface | MCP protocol + tool metadata |
-| Container scanners (Trivy) | Images and OS packages | MCP server behavior and configs |
-| **MCTS** | — | **MCP-specific threat model and scoring** |
+| SAST | General code vulnerabilities | MCP tool boundary, schemas, agent abuse |
+| DAST | HTTP application surface | MCP protocol + tool metadata |
+| Container scanners | Images and OS packages | MCP server behavior and configs |
+| Agent fleet scanners | Fleet inventory, skills, toxic flows | Attack chains, MCTS-T taxonomy, readiness |
+| Config-only MCP scanners | Client JSON misconfigs, cross-server flows | Repo SAST + live probe + scoring in one CLI |
+| Supply-chain / AI-BOM platforms | AI-BOM, blast radius, runtime proxy | Pre-deploy scan; local-first CI gate |
+| Trust registries | Public grades, badges, cloud consensus | Offline scan; no account for standard CI |
+| Runtime gateways | Live tool-call policy, ACLs, audit logs | Scan-time posture; not a runtime enforcer |
+| **MCTS** | — | **MCP-specific threat model, attack chains, auditable scoring** |
 
 Run MCTS **in addition to** existing AppSec tooling on MCP server repositories.
 
 ---
 
-## Known gaps (roadmap)
+## Differentiation
+
+| Capability | Status |
+|------------|--------|
+| Capability-graph attack chains (BFS) | Shipped |
+| Auditable exponential score + category gates | Shipped |
+| MCTS-T taxonomy + bundled SAF Sigma metadata rules | Shipped |
+| Executive HTML dashboard (local, no server) | Shipped |
+| Readiness heuristics + OPA policies | Shipped |
+| YARA on tool metadata | Shipped (opt-in) |
+| Line-jumping analyzer | Shipped |
+| Local-first / offline default | Shipped |
+
+---
+
+## Complete gap index
+
+Summary of **213 actionable backlog items** (GAP-001–240, excluding 27 already-shipped parity items):
+
+| Category | Gaps | P0 highlights |
+|----------|-----:|---------------|
+| Scanning | 29 | Per-technique SAF mode, Semgrep/Java, vet, machine-wide scan, pentest |
+| Analyzer | 47 | Behavioral SAST depth, prompt firewall, hallucinated packages, skill scanning |
+| CLI | 20 | inspect, guard, evo fleet, skills, init/doctor, cr-agent |
+| Discovery | 13 | 12+ clients, VS Code profiles, Claude Code globs, skills dirs |
+| Enterprise | 13 | MCP server mode, fleet upload, SOC2 eval, quarantine |
+| Integration | 11 | Claude plugin, Smithery, MCP tool explain_finding |
+| Reporting | 10 | Auto-fix, history/trend, dual taxonomy, redaction |
+| Supply Chain | 9 | CycloneDX, OSV, SBOM diff/hallucination, typosquat engine |
+| Taxonomy | 8 | Full 73 SAF rules, mitigations, regression scale |
+| Auth | 5 | Full OAuth client flow, MCP SDK provider |
+| CI / Script / Packaging | 17 | PyPI publish, 3-OS matrix, live CI, pre-commit |
+| SDK / REST / Utility / Fuzz / Data / Docs | 35 | Public SDK, WebSocket fuzz, file_magic, eval corpus |
+| Ecosystem-only (GAP-218–240) | 23 | Attack graph UI, proxy, Nucleus, Sigstore, watch daemon |
+
+**Ecosystem matrix (Part B):** 74 layer features (L1–L10) where MCTS is missing or planned — SQL depth, ANSI smuggling, ASI misconfigs, runtime identity, MITRE ATLAS, credential flow graph, reputation network, etc. See [Appendix B](feature-expansion-plan.md#part-11-appendix-b--ecosystem-layer-gaps-l1l10).
+
+---
+
+## Known gaps (roadmap summary)
 
 | Gap | Status | Target phase |
 |-----|--------|--------------|
+| Semgrep taint + Java SAST | Missing | Phase 2 |
+| Skills / `SKILL.md` scanning | Missing | Phase 2 |
+| Machine-wide config scan (no explicit target) | Missing | Phase 2 |
+| MCP server mode for IDE agents | Missing | Phase 3 |
+| CycloneDX / AI-BOM export | Missing | Phase 2–3 |
+| Interactive attack-graph dashboard | Partial | Phase 2 |
+| Runtime stdio proxy (inline detectors) | Missing | Phase 3 |
+| Governance YAML + allowlist policies | Partial | Phase 2 |
 | Remote protocol fuzz (`mcts fuzz --url`) | Planned | Phase 2 |
-| Deep multi-language SAST (tree-sitter / taint) | Partial | Phase 2 — `uv sync --extra sast` |
-| General-purpose Semgrep layer | Optional extra | Phase 2 |
-| MCP server mode for IDE agents | Planned | Phase 3 |
+| Deep multi-language SAST (tree-sitter / taint) | Partial | Phase 2 |
 | Package vetting (`mcts vet`) | Planned | Phase 3 |
 | Agent-assisted pentest (`mcts pentest`) | Stub | Phase 3 |
 | Scan history / trend charts | Planned | Phase 2 |
-| SBOM / supply-chain depth | Partial | Phase 2–3 |
+| SBOM / VEX / Sigstore attestation | Partial | Phase 2–3 |
+| Container / IaC scan | Missing | Phase 3 |
+| Multi-LLM consensus panel (opt-in) | Partial | Phase 3 |
+| Public trust registry | Not planned (core) | Future optional |
+| Full OAuth client flow | Weak | Phase 3 |
+| 12+ agent client discovery | Partial | Phase 2 |
+| Prompt firewall + action gate | Missing | Phase 2 |
+| Hallucinated package detection | Missing | Phase 2 |
+| Toxic flow / skill issue codes (E/W/TF) | Partial | Phase 2 |
+| AIVSS / CVSS scoring modes | Missing | Phase 4 |
+| Claude Code plugin / VS Code extension | Missing | Phase 4 |
+| ANSI/control-char smuggling checks | Partial | Phase 2 |
+| Managed agent ASI misconfigs | Missing | Phase 2 |
+| MITRE ATLAS + multi-framework compliance | Missing | Phase 4 |
+| Programmatic Scanner SDK | Missing | Phase 3 |
+| Pre-commit hook installer | Missing | Phase 4 |
+| WebSocket transport fuzz | Missing | Phase 3 |
+| Global reputation / benchmarking network | Missing | Future |
 
-Details: [Product Roadmap](roadmap.md) · [Feature Expansion Plan](feature-expansion-plan.md)
+Details: [Product Roadmap](roadmap.md) · [Feature Expansion Plan — full appendix](feature-expansion-plan.md#part-11-appendix--full-gap-backlog-gap-001240)
 
 ---
 
