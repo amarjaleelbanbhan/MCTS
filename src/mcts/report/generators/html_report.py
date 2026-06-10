@@ -14,6 +14,7 @@ from mcts.reporting.models import ScanReport
 _PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 _TEMPLATE_DIR = _PACKAGE_ROOT / "templates"
 _ASSETS_DIR = _PACKAGE_ROOT / "assets"
+_VENDOR_DIR = _ASSETS_DIR / "vendor"
 
 
 def _read_text(path: Path) -> str:
@@ -37,10 +38,13 @@ def write_html_report(report: ScanReport, output: Path) -> None:
 
     payload = build_dashboard_payload(report)
     report_json = json.dumps(payload, default=str).replace("</", "<\\/")
+    chart_js = _read_text(_VENDOR_DIR / "chart.umd.min.js")
+    dashboard_js = _read_text(_ASSETS_DIR / "dashboard.js")
     html = template.render(
         report_json=report_json,
         styles=_read_text(_ASSETS_DIR / "styles.css"),
-        dashboard_js=_read_text(_ASSETS_DIR / "dashboard.js"),
+        chart_script=f"<script>\n{chart_js}\n</script>",
+        dashboard_script=f"<script>\n{dashboard_js}\n</script>",
         logo_src=logo_data_uri(for_report=True),
         icons_json=json.dumps(_load_icons()),
         app_version=report.version,
